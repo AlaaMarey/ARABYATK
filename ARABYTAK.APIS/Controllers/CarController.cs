@@ -3,37 +3,30 @@ using Arabytak.Core.Repositories.Contract;
 using Arabytak.Core.Specification.CarSpecification;
 using ARABYTAK.APIS.DTOs;
 using AutoMapper;
+using Microsoft.AspNetCore.Authorization;
 using Microsoft.AspNetCore.Http;
 using Microsoft.AspNetCore.Mvc;
 using Microsoft.Identity.Client;
 
 namespace ARABYTAK.APIS.Controllers
 {
-
+    [Authorize]
     public class CarController : BaseApiController
     {
-        private readonly IGenericRepository<Car> _genericRepository;
-        private readonly IMapper _mapper;
-        private readonly IGenericRepository<Brand> _brandRepo;
-        private readonly IGenericRepository<Dealership> _dealRepo;
-        private readonly IGenericRepository<RescueCompany> _rescueRepo;
-
-        public CarController(IGenericRepository<Car> genericRepository,IMapper mapper ,
-            IGenericRepository<Brand> brandRepo,IGenericRepository<Dealership> dealRepo
-            ,IGenericRepository<RescueCompany> RescueRepo)
-        {
-            _genericRepository = genericRepository;
-            
+               private readonly IMapper _mapper;
+               private readonly IUnitOfWork _uniteOfWork;
+        
+        public CarController(IMapper mapper, IUnitOfWork uniteOfWork )
+        {  
             _mapper = mapper;
-            _brandRepo = brandRepo;
-            _dealRepo = dealRepo;
-            _rescueRepo = RescueRepo;
+            _uniteOfWork = uniteOfWork;
+           
         }
         [HttpGet("{status}/{CarId}")]
         public async Task<ActionResult<CarDto>> GetCarDetails(int CarId,[FromQuery] Status status)
         {
-            var spec = new CarWithBrandAndCategoryAndPicUrlAndSpecSpecification(CarId,status);
-            var car = await _genericRepository.GetByIdWithSpecAsync(spec);
+            var spec = new CarWithBrandAndCategoryAndPicUrlAndSpecSpecification(CarId, status);
+            var car = await _uniteOfWork.Repositorey<Car>().GetByIdWithSpecAsync(spec);
             if(car==null)
             {
                 return NotFound();
@@ -55,24 +48,29 @@ namespace ARABYTAK.APIS.Controllers
             return Ok(carDto);
         }
 
+
+
         [HttpGet("Brands")]
         public async Task<ActionResult<IReadOnlyList<Brand>>> GetBrand()
         {
-            var brands= await _brandRepo.GetAllAsync();
+            var brands= await _uniteOfWork.Repositorey<Brand>().GetAllAsync();
             return Ok(brands);
         }
+
+
         [HttpGet("Dealership")]
         public async Task<ActionResult<IReadOnlyList<Dealership>>> GetDealerShip()
         {
-            var dealerships= await _dealRepo.GetAllAsync();
+            var dealerships= await _uniteOfWork.Repositorey<Dealership>().GetAllAsync();
             return Ok(dealerships);
         }
+
+
         [HttpGet("RescueCompany")]
         public async Task<ActionResult<IReadOnlyList<RescueCompany>>> GetRescueCompany()
         {
-            var RescueCompany=  await _rescueRepo.GetAllAsync();
+            var RescueCompany=  await _uniteOfWork.Repositorey<RescueCompany>().GetAllAsync();
             return Ok(RescueCompany);
-
         }
     }
 }

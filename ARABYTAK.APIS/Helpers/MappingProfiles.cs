@@ -1,4 +1,5 @@
 ﻿using Arabytak.Core.Entities;
+using Arabytak.Core.Entities.Identity_Entities;
 using ARABYTAK.APIS.DTOs;
 using AutoMapper;
 
@@ -18,6 +19,8 @@ namespace ARABYTAK.APIS.Helpers
             CreateMap<SpecNewCar, SpecNewCarDto>();
             CreateMap<SpecUsedCar, SpecUsedCarDto>();
             CreateMap<CarPictureUrl, CarPictureDto>();
+            CreateMap<RegisterUserDto, ApplicationUser>().ForMember(D => D.UserName, O => O.MapFrom(S => S.Name)).ReverseMap();
+
         }
     }
 }
